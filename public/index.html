@@ -1,11 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>    
+    <script src="peerjs.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-    Hello world amigo
-</body>
+
+    <script type="text/javaScript">
+
+        const host = "https://evening-headland-56271.herokuapp.com/";
+        const puerto = "80";
+        let cnx;
+
+        //let peer;
+        function create(){
+            let lastPeerId;
+
+            const meetingId = document.getElementById("meetingId");
+
+            const peer = new Peer(meetingId.value, {
+                host: host,
+                port: puerto,
+                path: '/myapp'
+            });
+
+            peer.on('open', function (id) {
+                if (peer.id === null) {
+                    console.log('Received null id from peer open');
+                    peer.id = lastPeerId;
+                    console.log('ID: 1', lastPeerId);
+                } else {
+                    lastPeerId = peer.id;
+                    console.log('ID: 2', peer.id);
+                }                
+            });                    
+           
+            peer.on('connection', function(conn) {
+                alert('connection');
+                cnx = conn;
+                conn.on('data', function(data){
+                    // Will print 'hi!'
+                    console.log('data', data);
+                    alert(data);
+                });
+            });            
+        }     
+
+        function connect(){          
+            console.log('connect clik');  
+            const meetingId = document.getElementById("meetingId");
+            console.log("meetingId", meetingId.value);
+            //peer = new Peer(); 
+            const peer = new Peer(null, {
+                host: host,
+                port: puerto,
+                path: '/myapp'
+            });
+         
+            const conn = peer.connect(meetingId.value);
+            conn.on('open', function(){
+                cnx = conn;
+                // here you have conn.id
+                console.log('open');
+                conn.send('hi!');
+                conn.on('data', function(data){
+                    // Will print 'hi!'
+                    console.log('data', data);
+                    alert(data);
+                });                
+            });                  
+
+            peer.on('error', function(err) {alert('err', JSON.stringify(err)); });
+        }
+
+        function sendMessage(){
+            const meetingElem = document.getElementById("message");
+            cnx.send(meetingElem.value);
+        }
+
+    </script>
+  </head>
+  <body>
+    <form>
+      <input type="text" id="meetingId" value="id1">
+      <input type="button" value="Create" onclick="create()" /> 
+      <input type="button" value="Connect" onclick="connect()" /> <br />
+      <input type="text" id="message"> <input type="button" value="Send message" onclick="sendMessage()" /> <br />
+    </form>
+  </body>
 </html>
