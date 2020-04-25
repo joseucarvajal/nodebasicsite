@@ -36,7 +36,8 @@ router.get('/sitemap',function(req,res){
 });
 
 //add the router
+var PORT = process.env.PORT || 3000;
 app.use('/', router);
-app.listen(process.env.port || 3000);
+app.listen(PORT);
 
-console.log('Running at Port v2: ', process.env.port);
+console.log('Running at Port v2: ', PORT);
