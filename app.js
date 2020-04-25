@@ -1,12 +1,42 @@
-var PORT = process.env.PORT || 5000;
-var express = require('express');
-var app = express();
 
-var http = require('http');
-var server = http.Server(app);
+const express = require('express');
 
-app.use(express.static('public'));
+const { ExpressPeerServer } = require('peer');
 
-server.listen(PORT, function() {
-  console.log('App server running');
+const app = express();
+const path = require('path');
+const router = express.Router();
+
+
+const server = app.listen(9000);
+
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+  path: '/myapp'
 });
+
+
+var oneDay = 86400000;
+app.use(express.static(__dirname + '/public', { maxAge: oneDay }));
+
+app.use('/', peerServer);
+
+
+router.get('/',function(req,res){
+  res.sendFile(path.join(__dirname+'/index.html'));
+  //__dirname : It will resolve to your project folder.
+});
+
+router.get('/peerjs.min.js',function(req,res){
+  res.sendFile(path.join(__dirname+'/peerjs.min.js'));
+});
+
+router.get('/sitemap',function(req,res){
+  res.sendFile(path.join(__dirname+'/sitemap.html'));
+});
+
+//add the router
+app.use('/', router);
+app.listen(process.env.port || 3000);
+
+console.log('Running at Port v2: ', process.env.port);
